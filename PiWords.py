@@ -3,6 +3,7 @@ import tkinter as tk
 import tkinter.ttk as ttk
 import threading
 import time
+import random
 
 WORD_LIST_PATH = "svenska-ord.txt"
 
@@ -18,7 +19,8 @@ class PiWords:
         self.correct_words = list()
         self.rejected_words = list()
 
-        self.root = tk.Tk("PiWords")
+        self.root = tk.Tk()
+        self.root.title("PiWords")
         self.frame = ttk.Frame(master=self.root)
         self.lbl1 = ttk.Label(master=self.frame, text="Skriv så många ord du kan på 30 s")
         self.lbl2 = ttk.Label(master=self.frame, text="Tryck Enter efter varje ord")
@@ -40,14 +42,15 @@ class PiWords:
         txtfile = open(WORD_LIST_PATH, "+r")
         print("Opened " + WORD_LIST_PATH)
         templist = list()
-        print("Loading words...")
+        print("Loading words... ", end="")
         for line in txtfile:
             i += 1
             if "pi" in line:
-                templist.append(line.strip("-"))
+                templist.append(line.strip("-").strip())
         print("completed!")
         print(WORD_LIST_PATH + " contained " + str(i) + " words")
-        print(str(len(templist)) + " words contained the substring pi")
+        print(str(len(templist)) + " words contained the substring pi, for example:")
+        print(self.random_words(templist, 3))
         return tuple(templist)
 
     def word_entered(self, e=None):
@@ -101,6 +104,15 @@ class PiWords:
             self.secs -= 1
             self.clockvar.set(str(self.secs) + " s")
         self.game_over()
+
+    def random_words(self, l, n=1) -> str:
+        words = ""
+        for i in range(n):
+            if n == 1 or i == 0:
+                words = (l[random.randint(0, len(l)-1)])
+            else:
+                words = (l[random.randint(0, len(l)-1)]) + ", " + words
+        return words
 
 if __name__ == "__main__":
     app = PiWords()
