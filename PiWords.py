@@ -4,10 +4,14 @@ import tkinter.ttk as ttk
 import threading
 import time
 
+WORD_LIST_PATH = "svenska-ord.txt"
+
+
 class PiWords:
 
     def __init__(self):
-        self.pi_words = tuple()
+        self.running = False
+        self.pi_words = self.read_pi_words()
         self.secs = 30
         self.clockthread = threading.Thread(target=self.clock_tick)
         self.entered_words = list()
@@ -23,21 +27,28 @@ class PiWords:
         self.txtvar = tk.StringVar(master=self.frame)
         self.txtfield = ttk.Entry(textvariable=self.txtvar)
 
-        self.frame.grid(pady=(10,0))
+        self.frame.grid(pady=(10, 0))
         self.lbl1.grid(row=0, column=0)
         self.lbl2.grid(row=1, column=0)
-        self.txtfield.grid(row=2, column=0, pady=(20,20))
+        self.txtfield.grid(row=2, column=0, pady=(20, 20))
         self.clocklbl.grid(row=3, column=0, pady=20)
 
         self.root.mainloop()
 
-    def read_pi_words(self):
-        txtfile = open("svenska-ord.txt", "+r")
+    def read_pi_words(self) ->tuple:
+        i = 0
+        txtfile = open(WORD_LIST_PATH, "+r")
+        print("Opened " + WORD_LIST_PATH)
         templist = list()
+        print("Loading words...")
         for line in txtfile:
+            i += 1
             if "pi" in line:
-                templist.append(line.strip(__chars="-"))
-        self.pi_words = tuple(templist)
+                templist.append(line.strip("-"))
+        print("completed!")
+        print(WORD_LIST_PATH + " contained " + str(i) + " words")
+        print(str(len(templist)) + " words contained the substring pi")
+        return tuple(templist)
 
     def word_entered(self, e=None):
         self.entered_words.append(self.txtvar.get())
@@ -51,18 +62,32 @@ class PiWords:
             else:
                 self.rejected_words.append(inputword)
         self.correct_words = list(set(self.correct_words))
+        self.rejected_words = list(set(self.rejected_words))
 
     def start_game(self):
+        self.running = True
         self.clockthread.start()
 
+    def string_of_words_from_list(self, word_list: list) -> str:
+        tempstring = ""
+        for word in word_list:
+            tempstring = word + "\n" + tempstring
+        return tempstring
+
     def game_over(self):
+        self.running = False
+
         # show a window with stats
-        win = tk.Toplevel(master=self.root)
+        win = tk.Toplevel(master=self.root, )
         fr = ttk.Frame(master=win)
-        lbl1 = ttk.Label(master=fr, text="Du klarade " + str(len(self.correct_words)) + " ord.")
-        lbl2 = ttk.Label("Godkända:\n" + )
-        fr.pack()
-        lbl1.pack()
+        lbl_info = ttk.Label(master=fr, text="Du klarade " + str(len(self.correct_words)) + " ord.")
+        lbl_correct_words = ttk.Label(text="Godkända:\n" + self.string_of_words_from_list(self.correct_words))
+        lbl_rejected_words = ttk.Label(text="Ej godkända:\n" + self.string_of_words_from_list(self.rejected_words))
+        fr.grid(row=0, column=0)
+        lbl_info.grid(row=0, column=0, rowspan=2)
+        lbl_correct_words.grid(row=1, column=0)
+        lbl_rejected_words.grid(row=1, column=1)
+
 
         # reset the game state #
         # make a new clock thread
