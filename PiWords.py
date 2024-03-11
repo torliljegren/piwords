@@ -4,10 +4,11 @@ import tkinter.ttk as ttk
 import threading
 import time
 import random
+import math
 
 WORD_LIST_PATH = "svenska-ord.txt"
-TIME_LIMIT_S = 10
-REGULAR_FONT_SIZE = 50
+TIME_LIMIT_S = 150
+REGULAR_FONT_SIZE = 65
 CLOCK_FONT_SIZE = 80
 STAT_FONT_SIZE = 15
 
@@ -26,7 +27,7 @@ class PiWords:
         self.root.title("PiWords")
         self.frame = ttk.Frame(master=self.root)
         self.lbl1 = ttk.Label(master=self.frame, text="Skriv så många ord du kan som innehåller pi")
-        self.lbl3 = ttk.Label(master=self.frame, text="Du har" + str(TIME_LIMIT_S) + " s")
+        self.lbl3 = ttk.Label(master=self.frame, text="Du har " + self.time_left(self.secs))
         self.lbl2 = ttk.Label(master=self.frame, text="Tryck Enter efter varje ord")
         self.clockvar = tk.StringVar(master=self.frame, value=str(TIME_LIMIT_S) + " s")
         self.clocklbl = ttk.Label(master=self.frame, textvariable=self.clockvar, style="Clock.TLabel")
@@ -35,9 +36,10 @@ class PiWords:
 
         self.frame.grid(pady=(10, 0))
         self.lbl1.grid(row=0, column=0, pady=50, padx=50)
-        self.lbl2.grid(row=1, column=0)
-        self.txtfield.grid(row=2, column=0, pady=(20, 100))
-        self.clocklbl.grid(row=3, column=0, pady=80)
+        self.lbl3.grid(row=1, column=0, pady=50, padx=50)
+        self.lbl2.grid(row=2, column=0)
+        self.txtfield.grid(row=3, column=0, pady=(20, 100))
+        self.clocklbl.grid(row=4, column=0, pady=80)
 
         self.txtfield.bind("<Return>", self.enter_pressed)
 
@@ -143,6 +145,14 @@ class PiWords:
             else:
                 words = (l[random.randint(0, len(l)-1)]) + ", " + words
         return words
+
+    def time_left(self, seconds) -> str:
+        if seconds < 60:
+            return str(seconds) + " s"
+        else:
+            mins = int(seconds/60)
+            secs = seconds - 60*mins
+            return str(mins) + " min " + str(secs) + " s"
 
 if __name__ == "__main__":
     app = PiWords()
