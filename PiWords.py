@@ -1,13 +1,11 @@
-
-import tkinter as tk
-import tkinter.ttk as ttk
+import random
 import threading
 import time
-import random
-import math
+import tkinter as tk
+import tkinter.ttk as ttk
 
 WORD_LIST_PATH = "svenska-ord.txt"
-TIME_LIMIT_S = 150
+TIME_LIMIT_S = 90
 REGULAR_FONT_SIZE = 65
 CLOCK_FONT_SIZE = 80
 STAT_FONT_SIZE = 15
@@ -26,10 +24,10 @@ class PiWords:
         self.root = tk.Tk()
         self.root.title("PiWords")
         self.frame = ttk.Frame(master=self.root)
-        self.lbl1 = ttk.Label(master=self.frame, text="Skriv så många ord du kan som innehåller pi")
+        self.lbl1 = ttk.Label(master=self.frame, text="Skriv så många ord du kan som innehåller pi", style="Heading.TLabel")
         self.lbl3 = ttk.Label(master=self.frame, text="Du har " + self.time_left(self.secs))
         self.lbl2 = ttk.Label(master=self.frame, text="Tryck Enter efter varje ord")
-        self.clockvar = tk.StringVar(master=self.frame, value=str(TIME_LIMIT_S) + " s")
+        self.clockvar = tk.StringVar(master=self.frame, value=self.time_left(TIME_LIMIT_S))
         self.clocklbl = ttk.Label(master=self.frame, textvariable=self.clockvar, style="Clock.TLabel")
         self.txtvar = tk.StringVar(master=self.frame)
         self.txtfield = ttk.Entry(textvariable=self.txtvar, font=("Helvetica", REGULAR_FONT_SIZE))
@@ -46,14 +44,16 @@ class PiWords:
         # configure styles #
         self.style = ttk.Style(self.root)
         self.style.configure("TLabel", font=("Helvetica", REGULAR_FONT_SIZE))
+        self.style.configure("Heading.TLabel", font=("Helvetica", REGULAR_FONT_SIZE, "bold"))
         self.style.configure("Clock.TLabel", font=("Helvetica", CLOCK_FONT_SIZE), foreground="red")
         self.style.configure("Stat.TLabel", font=("Helvetica", STAT_FONT_SIZE))
         self.style.configure("Correct.Stat.TLabel", foreground="green")
         self.style.configure("Rejected.Stat.TLabel", foreground="red")
 
+        self.txtfield.focus_set()
         self.root.mainloop()
 
-    def read_pi_words(self) ->tuple:
+    def read_pi_words(self) -> tuple:
         i = 0
         txtfile = open(WORD_LIST_PATH, "+r")
         print("Opened " + WORD_LIST_PATH)
@@ -96,7 +96,8 @@ class PiWords:
         self.running = True
         self.clockthread.start()
 
-    def string_of_words_from_list(self, word_list: list) -> str:
+    @staticmethod
+    def string_of_words_from_list(word_list: list) -> str:
         tempstring = ""
         for word in word_list:
             tempstring = word + "\n" + tempstring
@@ -112,7 +113,7 @@ class PiWords:
         self.clockthread = threading.Thread(target=self.clock_tick)
         # reset time
         self.secs = TIME_LIMIT_S
-        self.clockvar.set(str(TIME_LIMIT_S) + " s")
+        self.clockvar.set(self.time_left(TIME_LIMIT_S))
         # reset word lists
         self.entered_words = list()
         self.rejected_words = list()
@@ -134,25 +135,29 @@ class PiWords:
         while self.secs > 0:
             time.sleep(1)
             self.secs -= 1
-            self.clockvar.set(str(self.secs) + " s")
+            self.clockvar.set(self.time_left(self.secs))
         self.game_over()
 
-    def random_words(self, l, n=1) -> str:
+    @staticmethod
+    def random_words(wordlist, n=1) -> str:
         words = ""
         for i in range(n):
             if n == 1 or i == 0:
-                words = (l[random.randint(0, len(l)-1)])
+                words = (wordlist[random.randint(0, len(wordlist)-1)])
             else:
-                words = (l[random.randint(0, len(l)-1)]) + ", " + words
+                words = (wordlist[random.randint(0, len(wordlist)-1)]) + ", " + words
         return words
 
-    def time_left(self, seconds) -> str:
+    @staticmethod
+    def time_left(seconds) -> str:
         if seconds < 60:
             return str(seconds) + " s"
         else:
             mins = int(seconds/60)
             secs = seconds - 60*mins
             return str(mins) + " min " + str(secs) + " s"
+
+
 
 if __name__ == "__main__":
     app = PiWords()
