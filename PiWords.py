@@ -4,11 +4,14 @@ import time
 import tkinter as tk
 import tkinter.ttk as ttk
 
+SUBSTRING = "pi"
 WORD_LIST_PATH = "svenska-ord.txt"
-TIME_LIMIT_S = 20
+TIME_LIMIT_S = 120
 REGULAR_FONT_SIZE = 65
 CLOCK_FONT_SIZE = 90
-STAT_FONT_SIZE = 15
+STAT_FONT_SIZE = 20
+CLOCK_COLOR_NORMAL = 'limegreen'
+CLOCK_COLOR_WARNING = 'red'
 
 
 class PiWords:
@@ -25,20 +28,24 @@ class PiWords:
         self.root = tk.Tk()
         self.root.title("PiWords")
         self.frame = ttk.Frame(master=self.root)
-        self.lbl1 = ttk.Label(master=self.frame, text="Skriv så många ord du kan som innehåller pi", style="Heading.TLabel")
+        self.lbl1 = ttk.Label(master=self.frame, text="Skriv så många ord du kan som innehåller " + SUBSTRING, style="Heading.TLabel")
         self.lbl3 = ttk.Label(master=self.frame, text="på tiden " + self.time_left(TIME_LIMIT_S))
         self.lbl2 = ttk.Label(master=self.frame, text="Tryck Enter efter varje ord")
+        self.clockframe = ttk.Frame(master=self.frame, style="Clock.TFrame")
         self.clockvar = tk.StringVar(master=self.frame, value=self.time_left(TIME_LIMIT_S))
-        self.clocklbl = ttk.Label(master=self.frame, textvariable=self.clockvar, style="Clock.TLabel")
+        self.clocklbl = ttk.Label(master=self.clockframe, textvariable=self.clockvar, style="Clock.TLabel")
         self.txtvar = tk.StringVar(master=self.frame)
         self.txtfield = ttk.Entry(textvariable=self.txtvar, font=("Helvetica", REGULAR_FONT_SIZE))
 
         self.frame.grid(pady=(10, 0))
-        self.lbl1.grid(row=0, column=0, pady=(50,25), padx=50)
-        self.lbl3.grid(row=1, column=0, pady=(25,50), padx=50)
+        self.lbl1.grid(row=0, column=0, pady=(50, 25), padx=50)
+        self.lbl3.grid(row=1, column=0, pady=(25, 50), padx=50)
         self.lbl2.grid(row=2, column=0)
         self.txtfield.grid(row=3, column=0, pady=(20, 100))
-        self.clocklbl.grid(row=4, column=0, pady=80)
+        self.clocklbl.grid(row=0, column=0, padx=20, pady=20)
+        self.clockframe.grid(row=4, column=0, pady=80)
+        # self.clockframe.configure(width=2000)
+        self.clockframe.grid_columnconfigure(0, minsize=800)
 
         self.txtfield.bind("<Return>", self.enter_pressed)
 
@@ -46,7 +53,9 @@ class PiWords:
         self.style = ttk.Style(self.root)
         self.style.configure("TLabel", font=("Helvetica", REGULAR_FONT_SIZE))
         self.style.configure("Heading.TLabel", font=("Helvetica", REGULAR_FONT_SIZE, "bold"))
-        self.style.configure("Clock.TLabel", font=("Helvetica", CLOCK_FONT_SIZE), foreground="red")
+        self.style.configure("Clock.TLabel", font=("Helvetica", CLOCK_FONT_SIZE), foreground=CLOCK_COLOR_NORMAL,
+                             background="black", borderwidth=20, bordercolor='black')
+        self.style.configure("Clock.TFrame", background="black", bordercolor="grey", borderwidth=4)
         self.style.configure("Stat.TLabel", font=("Helvetica", STAT_FONT_SIZE))
         self.style.configure("Correct.Stat.TLabel", foreground="green")
         self.style.configure("Rejected.Stat.TLabel", foreground="red")
@@ -62,11 +71,11 @@ class PiWords:
         print("Loading words... ", end="")
         for line in txtfile:
             i += 1
-            if "pi" in line:
+            if SUBSTRING in line:
                 templist.append(line.strip("-").strip())
         print("completed!")
         print(WORD_LIST_PATH + " contained " + str(i) + " words")
-        print(str(len(templist)) + " words contained the substring pi, for example:")
+        print(str(len(templist)) + " words contained the substring" + SUBSTRING + ", for example:")
         print(self.random_words(templist, 3))
         return tuple(templist)
 
@@ -77,7 +86,7 @@ class PiWords:
         if not self.running:
             self.start_game()
 
-        self.entered_words.append(self.txtvar.get())
+        self.entered_words.append(self.txtvar.get().lower())
         self.txtvar.set("")
         self.txtfield.focus_set()
 
@@ -142,6 +151,10 @@ class PiWords:
             time.sleep(1)
             self.secs -= 1
             self.clockvar.set(self.time_left(self.secs))
+            if self.secs == 10:
+                self.style.configure("Clock.TLabel", foreground=CLOCK_COLOR_WARNING)
+        # restore green color to clock
+        self.style.configure("Clock.TLabel", foreground=CLOCK_COLOR_NORMAL)
         self.game_over()
 
     @staticmethod
