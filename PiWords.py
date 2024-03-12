@@ -7,10 +7,11 @@ import tkinter.ttk as ttk
 SUBSTRING = "pi"
 WORD_LIST_PATH = "svenska-ord.txt"
 TIME_LIMIT_S = 120
-REGULAR_FONT_SIZE = 65
+REGULAR_FONT_SIZE = 50
+HEADING_FONT_SIZE = 71
 CLOCK_FONT_SIZE = 90
 STAT_FONT_SIZE = 20
-CLOCK_COLOR_NORMAL = 'limegreen'
+CLOCK_COLOR_NORMAL = 'green3'
 CLOCK_COLOR_WARNING = 'red'
 
 
@@ -28,31 +29,33 @@ class PiWords:
         self.root = tk.Tk()
         self.root.title("PiWords")
         self.frame = ttk.Frame(master=self.root)
-        self.lbl1 = ttk.Label(master=self.frame, text="Skriv så många ord du kan som innehåller " + SUBSTRING, style="Heading.TLabel")
-        self.lbl3 = ttk.Label(master=self.frame, text="på tiden " + self.time_left(TIME_LIMIT_S))
-        self.lbl2 = ttk.Label(master=self.frame, text="Tryck Enter efter varje ord")
+        self.lblheading = ttk.Label(master=self.frame, text="Skriv så många ord du kan som innehåller", style="Heading.TLabel")
+        self.lblsubstring = ttk.Label(master=self.frame, text=SUBSTRING, style="Heading.TLabel")
+        self.lblinfo = ttk.Label(master=self.frame, text="på tiden " + self.time_left(TIME_LIMIT_S))
+        self.lblpress = ttk.Label(master=self.frame, text="Tryck Enter efter varje ord")
         self.clockframe = ttk.Frame(master=self.frame, style="Clock.TFrame")
         self.clockvar = tk.StringVar(master=self.frame, value=self.time_left(TIME_LIMIT_S))
         self.clocklbl = ttk.Label(master=self.clockframe, textvariable=self.clockvar, style="Clock.TLabel")
         self.txtvar = tk.StringVar(master=self.frame)
         self.txtfield = ttk.Entry(textvariable=self.txtvar, font=("Helvetica", REGULAR_FONT_SIZE))
 
-        self.frame.grid(pady=(10, 0))
-        self.lbl1.grid(row=0, column=0, pady=(50, 25), padx=50)
-        self.lbl3.grid(row=1, column=0, pady=(25, 50), padx=50)
-        self.lbl2.grid(row=2, column=0)
-        self.txtfield.grid(row=3, column=0, pady=(20, 100))
+        self.frame.grid(sticky='nsew')
+        self.lblheading.grid(row=0, column=0, pady=(10, 25))
+        self.lblsubstring.grid(row=1, column=0, pady=(5, 50))
+        self.lblinfo.grid(row=2, column=0, pady=25)
+        self.lblpress.grid(row=3, column=0)
+        self.txtfield.grid(row=4, column=0, pady=(20, 100))
         self.clocklbl.grid(row=0, column=0, padx=20, pady=20)
-        self.clockframe.grid(row=4, column=0, pady=80)
-        # self.clockframe.configure(width=2000)
+        self.clockframe.grid(row=5, column=0, pady=80)
         self.clockframe.grid_columnconfigure(0, minsize=800)
 
         self.txtfield.bind("<Return>", self.enter_pressed)
+        self.txtfield.bind("<Escape>", lambda e: self.game_over())
 
         # configure styles #
         self.style = ttk.Style(self.root)
         self.style.configure("TLabel", font=("Helvetica", REGULAR_FONT_SIZE))
-        self.style.configure("Heading.TLabel", font=("Helvetica", REGULAR_FONT_SIZE, "bold"))
+        self.style.configure("Heading.TLabel", font=("Helvetica", HEADING_FONT_SIZE, "bold"))
         self.style.configure("Clock.TLabel", font=("Helvetica", CLOCK_FONT_SIZE), foreground=CLOCK_COLOR_NORMAL,
                              background="black", borderwidth=20, bordercolor='black')
         self.style.configure("Clock.TFrame", background="black", bordercolor="grey", borderwidth=4)
@@ -98,9 +101,7 @@ class PiWords:
                 self.rejected_words.append(inputword)
 
         self.correct_words = list(set(self.correct_words))
-        print(self.correct_words)
         self.rejected_words = list(set(self.rejected_words))
-        print(self.rejected_words)
 
     def start_game(self):
         self.running = True
@@ -147,15 +148,18 @@ class PiWords:
         fr.grid(row=0, column=0)
 
     def clock_tick(self):
-        while self.secs > 0:
-            time.sleep(1)
+        while self.secs > 0 and self.running:
             self.secs -= 1
             self.clockvar.set(self.time_left(self.secs))
             if self.secs == 10:
                 self.style.configure("Clock.TLabel", foreground=CLOCK_COLOR_WARNING)
+            time.sleep(1)
         # restore green color to clock
         self.style.configure("Clock.TLabel", foreground=CLOCK_COLOR_NORMAL)
-        self.game_over()
+
+        # check if game was already aborted
+        if self.running:
+            self.game_over()
 
     @staticmethod
     def random_words(wordlist, n=1) -> str:
