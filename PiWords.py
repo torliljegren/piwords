@@ -5,10 +5,11 @@ import tkinter as tk
 import tkinter.ttk as ttk
 
 WORD_LIST_PATH = "svenska-ord.txt"
-TIME_LIMIT_S = 90
+TIME_LIMIT_S = 20
 REGULAR_FONT_SIZE = 65
-CLOCK_FONT_SIZE = 80
+CLOCK_FONT_SIZE = 90
 STAT_FONT_SIZE = 15
+
 
 class PiWords:
 
@@ -25,7 +26,7 @@ class PiWords:
         self.root.title("PiWords")
         self.frame = ttk.Frame(master=self.root)
         self.lbl1 = ttk.Label(master=self.frame, text="Skriv så många ord du kan som innehåller pi", style="Heading.TLabel")
-        self.lbl3 = ttk.Label(master=self.frame, text="Du har " + self.time_left(self.secs))
+        self.lbl3 = ttk.Label(master=self.frame, text="på tiden " + self.time_left(TIME_LIMIT_S))
         self.lbl2 = ttk.Label(master=self.frame, text="Tryck Enter efter varje ord")
         self.clockvar = tk.StringVar(master=self.frame, value=self.time_left(TIME_LIMIT_S))
         self.clocklbl = ttk.Label(master=self.frame, textvariable=self.clockvar, style="Clock.TLabel")
@@ -33,8 +34,8 @@ class PiWords:
         self.txtfield = ttk.Entry(textvariable=self.txtvar, font=("Helvetica", REGULAR_FONT_SIZE))
 
         self.frame.grid(pady=(10, 0))
-        self.lbl1.grid(row=0, column=0, pady=50, padx=50)
-        self.lbl3.grid(row=1, column=0, pady=50, padx=50)
+        self.lbl1.grid(row=0, column=0, pady=(50,25), padx=50)
+        self.lbl3.grid(row=1, column=0, pady=(25,50), padx=50)
         self.lbl2.grid(row=2, column=0)
         self.txtfield.grid(row=3, column=0, pady=(20, 100))
         self.clocklbl.grid(row=4, column=0, pady=80)
@@ -97,10 +98,15 @@ class PiWords:
         self.clockthread.start()
 
     @staticmethod
-    def string_of_words_from_list(word_list: list) -> str:
+    def string_of_words_from_list(word_list: list, n=1) -> str:
         tempstring = ""
+        i = 0
+        separator = ""
         for word in word_list:
-            tempstring = word + "\n" + tempstring
+            if i != 0:
+                separator = "\n" if i % n == 0 else ", "
+            tempstring = tempstring + separator + word
+            i += 1
         return tempstring
 
     def game_over(self):
@@ -124,11 +130,11 @@ class PiWords:
         win = tk.Toplevel()
         fr = ttk.Frame(master=win)
         lbl_info = ttk.Label(master=fr, text="Du klarade " + str(len(self.correct_words)) + " ord.")
-        lbl_correct_words = ttk.Label(master=fr, text="Godkända:\n" + self.string_of_words_from_list(self.correct_words), style="Correct.Stat.TLabel")
-        lbl_rejected_words = ttk.Label(master=fr, text="Ej godkända:\n" + self.string_of_words_from_list(self.rejected_words), style="Rejected.Stat.TLabel")
+        lbl_correct_words = ttk.Label(master=fr, text="Godkända:\n" + self.string_of_words_from_list(self.correct_words, 6), style="Correct.Stat.TLabel")
+        lbl_rejected_words = ttk.Label(master=fr, text="Ej godkända:\n" + self.string_of_words_from_list(self.rejected_words, 6), style="Rejected.Stat.TLabel")
         lbl_info.grid(row=0, column=0, pady=20, padx=50)
-        lbl_correct_words.grid(row=1, column=0)
-        lbl_rejected_words.grid(row=2, column=0)
+        lbl_correct_words.grid(row=1, column=0, sticky=tk.W, padx=50)
+        lbl_rejected_words.grid(row=2, column=0, sticky=tk.W, padx=50, pady=20)
         fr.grid(row=0, column=0)
 
     def clock_tick(self):
@@ -156,7 +162,6 @@ class PiWords:
             mins = int(seconds/60)
             secs = seconds - 60*mins
             return str(mins) + " min " + str(secs) + " s"
-
 
 
 if __name__ == "__main__":
