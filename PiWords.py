@@ -3,10 +3,11 @@ import threading
 import time
 import tkinter as tk
 import tkinter.ttk as ttk
+import playsound.playsound
 
 SUBSTRING = "pi"
 WORD_LIST_PATH = "svenska-ord.txt"
-TIME_LIMIT_S = 120
+TIME_LIMIT_S = 15
 REGULAR_FONT_SIZE = 50
 HEADING_FONT_SIZE = 71
 CLOCK_FONT_SIZE = 90
@@ -79,7 +80,7 @@ class PiWords:
                 templist.append(line.strip("-").strip())
         print("completed!")
         print(WORD_LIST_PATH + " contained " + str(i) + " words")
-        print(str(len(templist)) + " words contained the substring" + SUBSTRING + ", for example:")
+        print(str(len(templist)) + " words contained the substring " + SUBSTRING + ", for example:")
         print(self.random_words(templist, 3))
         return tuple(templist)
 
@@ -92,6 +93,7 @@ class PiWords:
             self.start_game()
 
         self.entered_words.append(self.txtvar.get().lower())
+        playsound.playsound.playsound("click.wav")
         self.txtvar.set("")
         self.txtfield.focus_set()
 
@@ -130,6 +132,8 @@ class PiWords:
         self.show_stat_window()
 
         # reset the game state #
+        # pick a new example word for fun
+        self.change_substring_heading_example_word()
         # make a new clock thread
         self.clockthread = threading.Thread(target=self.clock_tick)
         # reset time
@@ -164,6 +168,7 @@ class PiWords:
 
         # check if game was already aborted
         if self.running:
+            playsound.playsound.playsound("gong.wav")
             self.game_over()
 
     @staticmethod
