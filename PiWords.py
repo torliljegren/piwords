@@ -30,7 +30,8 @@ class PiWords:
         self.root.title("PiWords")
         self.frame = ttk.Frame(master=self.root)
         self.lblheading = ttk.Label(master=self.frame, text="Skriv så många ord du kan som innehåller", style="Heading.TLabel")
-        self.lblsubstring = ttk.Label(master=self.frame, text=SUBSTRING, style="Heading.TLabel")
+        self.substringvar = tk.StringVar(master=self.frame, value=SUBSTRING + " t.ex. " + self.random_words(self.pi_words))
+        self.lblsubstring = ttk.Label(master=self.frame, textvariable=self.substringvar, style="Heading.TLabel")
         self.lblinfo = ttk.Label(master=self.frame, text="på tiden " + self.time_left(TIME_LIMIT_S))
         self.lblpress = ttk.Label(master=self.frame, text="Tryck Enter efter varje ord")
         self.clockframe = ttk.Frame(master=self.frame, style="Clock.TFrame")
@@ -84,6 +85,7 @@ class PiWords:
 
     def enter_pressed(self, e=None):
         if self.txtvar.get() == "":
+            self.change_substring_heading_example_word()
             return
 
         if not self.running:
@@ -92,6 +94,9 @@ class PiWords:
         self.entered_words.append(self.txtvar.get().lower())
         self.txtvar.set("")
         self.txtfield.focus_set()
+
+    def change_substring_heading_example_word(self):
+        self.substringvar.set(SUBSTRING + " t.ex. " + self.random_words(self.pi_words))
 
     def check_words(self):
         for inputword in self.entered_words:
